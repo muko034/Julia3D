@@ -10,6 +10,11 @@ using std::ostringstream;
 
 #include "glutils.h"
 
+SceneJulia3D::SceneJulia3D()
+{
+	uniforms.rO = glm::vec3(0.0, 0.0, 2.0);
+}
+
 void SceneJulia3D::initScene()
 {
     //////////////////////////////////////////////////////
@@ -231,6 +236,12 @@ void SceneJulia3D::render()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
+	GLuint rOLoc = glGetUniformLocation(programHandle, "u_r0");
+	if( rOLoc >= 0 )
+	{
+		glUniform3fv(rOLoc, 1, &uniforms.rO[0]);
+	}
+
     glBindVertexArray(vaoHandle);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4 );
 }
@@ -262,4 +273,25 @@ void SceneJulia3D::printActiveUniforms(GLuint programHandle) {
     }
 
     free(name);
+}
+
+void SceneJulia3D::onKey(unsigned char key, int xmouse, int ymouse)
+{
+        switch (key)
+        {
+			case '+': uniforms.rO.z -= 0.1f;
+                break;
+            case '-': uniforms.rO.z += 0.1f;
+                break;
+            case 'w': uniforms.rO.y += 0.1f;
+                break;
+			case 'a': uniforms.rO.x -= 0.1f;
+                break;
+            case 's': uniforms.rO.y -= 0.1f;
+                break;
+            case 'd': uniforms.rO.x += 0.1f;
+                break;
+            default:
+                break;
+        };
 }

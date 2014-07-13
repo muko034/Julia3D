@@ -1,5 +1,6 @@
 //#include <GLTools.h>
 //#include <GLShaderManager.h>
+//#define FREEGLUT_STATIC
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
@@ -55,6 +56,11 @@ void RenderScene()
 	// petla animacji
 	glutPostRedisplay();
 }
+
+void onKey(unsigned char key, int xmouse, int ymouse)
+{
+	gScene->onKey(key, xmouse, ymouse);
+}
  
 // Entry point - GLUT setup and initialization
 int main( int argc, char** argv )
@@ -67,6 +73,7 @@ int main( int argc, char** argv )
 	glutCreateWindow("Julia3D");
 	glutReshapeFunc(ChangeSize);
 	glutDisplayFunc(RenderScene);
+	glutKeyboardFunc(onKey);
 
 	SetupRC();
 

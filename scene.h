@@ -24,6 +24,8 @@ public:
       Called when screen is resized
       */
     virtual void resize(int, int) = 0;
+
+	virtual void onKey(unsigned char key, int xmouse, int ymouse) = 0;
 };
 
 #endif // SCENE_H

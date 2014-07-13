@@ -1,10 +1,11 @@
 #version 400
+precision highp float;
 
-#define BOUNDING_RADIUS_2	3.0
+#define BOUNDING_RADIUS_2	1.4
 #define ESCAPE_THRESHOLD	1e1
 #define DEL					1e-4
 
-//uniform vec3 r0;				// TEXCOORD0 ray origin
+uniform vec3 u_r0;				// TEXCOORD0 ray origin
 //uniform vec3 rD;				// TEXCOORD1 ray direction (unit length)
 
 //uniform vec4 mu;				// quaternion constant specifying the particular set (C)
@@ -85,8 +86,8 @@ float intersectQJulia(inout vec3 r0, inout vec3 rD, vec4 c, int maxIterations, f
 {
 	float dist;
 	int i = 0;
-	//while (true) {
-	while (i<100) {
+	while (true) {
+	//while (i<1000) {
 		vec4 z = vec4(r0, 0.0);
 
 		vec4 zp = vec4(1.0, 0.0, 0.0, 0.0);
@@ -109,9 +110,9 @@ float intersectQJulia(inout vec3 r0, inout vec3 rD, vec4 c, int maxIterations, f
 
 vec3 Phong(vec3 light, vec3 eye, vec3 pt, vec3 N)
 {
-	vec3 diffuse = vec3(1.00, 0.45, 0.25);	// base color
+	vec3 diffuse = vec3(1.00, 0.30, 0.35);	// base color
 	const int specularExponent = 10;		// shininess od shading
-	const float specularity = 0.45;			// amplitude of specular highlight
+	const float specularity = 0.9;			// amplitude of specular highlight
 
 	vec3 L		= normalize(light - pt);
 	vec3 E		= normalize(eye - pt);
@@ -123,31 +124,37 @@ vec3 Phong(vec3 light, vec3 eye, vec3 pt, vec3 N)
 	return ( diffuse * max(NdotL, 0) + specularity * pow(max(dot(E, R), 0), specularExponent) );
 }
 
-vec3 intersectSphere(vec3 r0, vec3 rD)
+int intersectSphere(inout vec3 r0, vec3 rD)
 {
-	float B, C, d, t0, t1, t;
+	float A, B, C, d, t0, t1, t;
 
+	//A = dot(rD, rD);
+	A = 1.0;
 	B = 2.0 * dot(r0, rD);
 	C = dot(r0, r0) - BOUNDING_RADIUS_2;
-	d = sqrt(B*B - 4*C);
-	t0 = (-B + d) * 0.5;
-	t1 = (-B - d) * 0.5;
+	d = B*B - 4*A*C;
+	if (d <= 0) {
+		return 1;
+	} 
+	d = sqrt(d);	// delta
+	t0 = (-B + d) * 0.5 / A;
+	t1 = (-B - d) * 0.5 / A;
 	t = min(t0, t1);
 	r0 += t * rD;
 
-	return r0;
+	return 0;
 }
 
 void main()
 {
-	vec3 r0						= vec3(0.5, 0.0, 2.0);			
+	vec3 r0						= u_r0;			
 	vec3 rD						= normalize(vec3(fragCoord, -1.0));
 
-	const vec4 mu				= vec4(-0.291,-0.399,0.339,0.437);
+	const vec4 mu				= vec4(-0.591,-0.399,0.339,0.437);
 	const float epsilon			= 1e-4;							
-	const vec3 eye				= vec3(0.5, 0.5, 2.0);
-	const vec3 light			= normalize(vec3(0.57703));
-	const bool renderShadows	= false;
+	const vec3 eye				= vec3(10.0);
+	const vec3 light			= normalize(vec3(-0.3, 0.0, 1.0));
+	const bool renderShadows	= true;
 	const int maxIterations		= 10;
 
 	const vec4 backgroundColor = vec4(0.3, 0.3, 0.3, 1.0);
@@ -155,8 +162,12 @@ void main()
 	vec4 color = backgroundColor;
 
 	rD = normalize(rD);
-	r0 = intersectSphere(r0, rD);
-
+	if (intersectSphere(r0, rD) != 0) {		// ray doesn't intersect the sphere
+		//vFragColor = vec4(1.0, 0.0, 0.0, 1.0);
+		vFragColor = backgroundColor;
+		return;
+	}
+	
 	float dist = intersectQJulia(r0, rD, mu, maxIterations, epsilon);
 
 	if (dist < epsilon) {
@@ -174,13 +185,8 @@ void main()
 				color.xyz *= 0.4;
 			}
 		}
+		//color.x *= 1.5;
 	}
 
 	vFragColor = color;
-
-	//if (fragCoord.x >= -0.5 && fragCoord.x <= 0.5) {
-	//	vFragColor = vec4(1.0, 0.0, 0.0, 1.0);
-	//} else {
-	//	vFragColor = backgroundColor;
-	//}
 }
