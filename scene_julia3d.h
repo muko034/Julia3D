@@ -2,6 +2,7 @@
 #define SCENEJULIA3D
 
 #include "scene.h"
+#include "glslprogram.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -11,19 +12,14 @@
 class SceneJulia3D : public Scene
 {
 private:
+	GLSLProgram prog;
+
     int width, height;
     GLuint vboHandles[2];
     GLuint vaoHandle;
-	GLuint programHandle;
+	glm::vec3 u_rO;
 
-    void linkMe(GLint vertShader, GLint fragShader);
-	void printActiveUniforms(GLuint);
-
-private:
-	struct
-	{
-		glm::vec3 rO;
-	} uniforms;
+	void compileAndLinkShader();
 
 public:
     SceneJulia3D();

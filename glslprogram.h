@@ -36,6 +36,7 @@ public:
     bool   compileShaderFromFile( const char * fileName, GLSLShader::GLSLShaderType type );
     bool   compileShaderFromString( const string & source, GLSLShader::GLSLShaderType type );
     bool   link();
+    bool   validate();
     void   use();
 
     string log();
