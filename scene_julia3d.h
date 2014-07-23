@@ -17,6 +17,7 @@ private:
     int width, height;
     GLuint vboHandles[2];
     GLuint vaoHandle;
+	glm::vec4 m_bgColor;
 	glm::vec3 u_rO;
 	glm::vec4 u_c;
 

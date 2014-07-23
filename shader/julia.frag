@@ -159,14 +159,13 @@ void main()
 	const bool renderShadows	= true;
 	const int maxIterations		= 8;
 
-	const vec4 backgroundColor = vec4(0.3, 0.3, 0.3, 1.0);
-
-	vec4 color = backgroundColor;
+	vec4 color;
 
 	rD = normalize(rD);
 	if (intersectSphere(r0, rD) != 0) {		// ray doesn't intersect the sphere
 		//vFragColor = vec4(1.0, 0.0, 0.0, 1.0);
-		vFragColor = backgroundColor;
+		//vFragColor = backgroundColor;
+		discard;
 		return;
 	}
 	
@@ -188,6 +187,8 @@ void main()
 			}
 		}
 		//color.x *= 1.5;
+	} else {
+		discard;
 	}
 
 	vFragColor = color;

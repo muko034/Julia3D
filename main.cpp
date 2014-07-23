@@ -25,9 +25,6 @@ void ChangeSize(int w, int h)
 
 void SetupRC()
 {
-	// tlo
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
     //////////////// PLUG IN SCENE HERE /////////////////
 	gScene = new SceneJulia3D();
     ////////////////////////////////////////////////////
@@ -40,8 +37,6 @@ void SetupRC()
     GLUtils::checkForOpenGLError(__FILE__,__LINE__);
 
     GLUtils::dumpGLInfo();
-
-    glClearColor(0.2f,0.2f,0.2f,1.0f);
 
     gScene->initScene();
 }

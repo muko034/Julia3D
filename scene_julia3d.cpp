@@ -14,7 +14,8 @@ using std::ostringstream;
 #define FRAG_SHADER_PATH "shader/julia.frag"
 
 SceneJulia3D::SceneJulia3D()
-	: u_rO(0.0, 0.0, 2.0),
+	: m_bgColor(0.3, 0.3, 0.3, 1.0),
+	  u_rO(0.0, 0.0, 2.0),
 	  u_c(-0.591,-0.399,0.339,0.437)
 	  //u_c( 0.439000, -0.389000, 0.359000, -0.333000 )
 {
@@ -23,8 +24,10 @@ SceneJulia3D::SceneJulia3D()
 void SceneJulia3D::initScene()
 {
 	compileAndLinkShader();
+	
+	//t³o
+	glClearColor(m_bgColor.x, m_bgColor.y, m_bgColor.z, m_bgColor.w);
 
-	glClearColor(1.0,1.0,1.0,1.0);
     glEnable(GL_DEPTH_TEST);
 
     /////////////////// Create the VBO ////////////////////
