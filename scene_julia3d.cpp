@@ -14,7 +14,9 @@ using std::ostringstream;
 #define FRAG_SHADER_PATH "shader/julia.frag"
 
 SceneJulia3D::SceneJulia3D()
-	: u_rO(0.0, 0.0, 2.0)
+	: u_rO(0.0, 0.0, 2.0),
+	  u_c(-0.591,-0.399,0.339,0.437)
+	  //u_c( 0.439000, -0.389000, 0.359000, -0.333000 )
 {
 }
 
@@ -22,13 +24,15 @@ void SceneJulia3D::initScene()
 {
 	compileAndLinkShader();
 
-	glClearColor(0.0,0.0,0.0,1.0);
+	glClearColor(1.0,1.0,1.0,1.0);
     glEnable(GL_DEPTH_TEST);
 
     /////////////////// Create the VBO ////////////////////
     float positionData[] = {
-        -1.0f, -1.0f, 
-         1.0f, -1.0f, 
+        //-1.0f, -1.0f,
+		-1.0f, -0.8f,
+         //1.0f, -1.0f,
+		 1.0f, -0.8f,
         -1.0f,  1.0f, 
 		 1.0f,  1.0f };
 
@@ -56,9 +60,12 @@ void SceneJulia3D::update( float t )
 
 void SceneJulia3D::render()
 {
+	printf("mu: ( %f, %f, %f, %f )\n", u_c.x, u_c.y, u_c.z, u_c.w);
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	prog.setUniform("u_r0", u_rO);
+	prog.setUniform("u_c", u_c);
 
     glBindVertexArray(vaoHandle);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4 );
@@ -86,6 +93,22 @@ void SceneJulia3D::onKey(unsigned char key, int xmouse, int ymouse)
             case 's': u_rO.y -= 0.1f;
                 break;
             case 'd': u_rO.x += 0.1f;
+                break;
+			case 't': u_c.x += 0.01f;
+                break;
+			case 'g': u_c.x -= 0.01f;
+                break;
+			case 'y': u_c.y += 0.01f;
+                break;
+			case 'h': u_c.y -= 0.01f;
+                break;
+			case 'u': u_c.z += 0.01f;
+                break;
+			case 'j': u_c.z -= 0.01f;
+                break;
+			case 'i': u_c.w += 0.01f;
+                break;
+			case 'k': u_c.w -= 0.01f;
                 break;
             default:
                 break;

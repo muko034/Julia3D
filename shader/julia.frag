@@ -7,6 +7,7 @@ precision highp float;
 
 uniform vec3 u_r0;				// TEXCOORD0 ray origin
 //uniform vec3 rD;				// TEXCOORD1 ray direction (unit length)
+uniform vec4 u_c;
 
 //uniform vec4 mu;				// quaternion constant specifying the particular set (C)
 //uniform float epsilon;			//
@@ -150,12 +151,13 @@ void main()
 	vec3 r0						= u_r0;			
 	vec3 rD						= normalize(vec3(fragCoord, -1.0));
 
-	const vec4 mu				= vec4(-0.591,-0.399,0.339,0.437);
+	//const vec4 mu				= vec4(-0.591,-0.399,0.339,0.437);
+	vec4 mu						= u_c;
 	const float epsilon			= 1e-4;							
 	const vec3 eye				= vec3(10.0);
 	const vec3 light			= normalize(vec3(-0.3, 0.0, 1.0));
 	const bool renderShadows	= true;
-	const int maxIterations		= 10;
+	const int maxIterations		= 8;
 
 	const vec4 backgroundColor = vec4(0.3, 0.3, 0.3, 1.0);
 
