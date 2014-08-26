@@ -8,6 +8,7 @@ precision highp float;
 uniform vec3 u_r0;				// TEXCOORD0 ray origin
 //uniform vec3 rD;				// TEXCOORD1 ray direction (unit length)
 uniform vec4 u_c;
+uniform float wCoord;			// wsp w dla quaterniona (x, y, z, w)
 
 //uniform vec4 mu;				// quaternion constant specifying the particular set (C)
 //uniform float epsilon;			//
@@ -55,7 +56,7 @@ void iterateIntersect(inout vec4 q, inout vec4 qp, vec4 c, int maxIterations)
 vec3 normEstimate(vec3 p, vec4 c, int maxIterations)
 {
 	vec3 N;
-	vec4 qP = vec4(p, 0.0);
+	vec4 qP = vec4(p, wCoord);
 	float gradX, gradY, gradZ;
 
 	vec4 gx1 = qP - vec4(DEL, 0.0, 0.0, 0.0);
@@ -89,7 +90,7 @@ float intersectQJulia(inout vec3 r0, inout vec3 rD, vec4 c, int maxIterations, f
 	int i = 0;
 	while (true) {
 	//while (i<1000) {
-		vec4 z = vec4(r0, 0.0);
+		vec4 z = vec4(r0, wCoord);
 
 		vec4 zp = vec4(1.0, 0.0, 0.0, 0.0);
 
@@ -166,7 +167,7 @@ void main()
 		//vFragColor = vec4(1.0, 0.0, 0.0, 1.0);
 		//vFragColor = backgroundColor;
 		discard;
-		return;
+		//return;
 	}
 	
 	float dist = intersectQJulia(r0, rD, mu, maxIterations, epsilon);
@@ -177,7 +178,7 @@ void main()
 		color.xyz = Phong(light, rD, r0, N);
 		color.w = 1.0;
 
-		if (renderShadows == true) {
+		if (false/*renderShadows == true*/) {
 			vec3 L = normalize(light - r0);
 			r0 += N * epsilon * 2.0;
 			dist = intersectQJulia(r0, L, mu, maxIterations, epsilon);

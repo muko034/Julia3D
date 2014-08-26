@@ -3,6 +3,7 @@
 
 #include "scene.h"
 #include "glslprogram.h"
+#include "text2d.h"
 
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -20,6 +21,8 @@ private:
 	glm::vec4 m_bgColor;
 	glm::vec3 u_rO;
 	glm::vec4 u_c;
+	GLfloat u_wCoord;
+	Text2D text2d;
 
 	void compileAndLinkShader();
 

@@ -12,19 +12,23 @@ using std::ostringstream;
 
 #define VERT_SHADER_PATH "shader/julia.vert"
 #define FRAG_SHADER_PATH "shader/julia.frag"
+#define FONT_TEX_PATH	 "texture/Holstein.DDS"
 
 SceneJulia3D::SceneJulia3D()
 	: m_bgColor(0.3, 0.3, 0.3, 1.0),
+	  text2d(FONT_TEX_PATH, 10, 10, 60),
 	  u_rO(0.0, 0.0, 2.0),
-	  u_c(-0.591,-0.399,0.339,0.437)
-	  //u_c( 0.439000, -0.389000, 0.359000, -0.333000 )
+	  u_c(-0.591,-0.399,0.339,0.437),
+	  //u_c( 0.439000, -0.389000, 0.359000, -0.333000 ),
+	  u_wCoord(0.0)
 {
 }
 
 void SceneJulia3D::initScene()
 {
-	compileAndLinkShader();
-	
+	//compileAndLinkShader();
+	prog.compileAndLinkShaders(VERT_SHADER_PATH, FRAG_SHADER_PATH);
+
 	//t³o
 	glClearColor(m_bgColor.x, m_bgColor.y, m_bgColor.z, m_bgColor.w);
 
@@ -32,10 +36,10 @@ void SceneJulia3D::initScene()
 
     /////////////////// Create the VBO ////////////////////
     float positionData[] = {
-        //-1.0f, -1.0f,
-		-1.0f, -0.8f,
-         //1.0f, -1.0f,
-		 1.0f, -0.8f,
+        -1.0f, -1.0f,
+		//-1.0f, -0.8f,
+         1.0f, -1.0f,
+		 //1.0f, -0.8f,
         -1.0f,  1.0f, 
 		 1.0f,  1.0f };
 
@@ -54,6 +58,8 @@ void SceneJulia3D::initScene()
 
     glBindBuffer(GL_ARRAY_BUFFER, handle[0]);
     glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
+
+	text2d.init();
 }
 
 void SceneJulia3D::update( float t )
@@ -63,15 +69,21 @@ void SceneJulia3D::update( float t )
 
 void SceneJulia3D::render()
 {
-	printf("mu: ( %f, %f, %f, %f )\n", u_c.x, u_c.y, u_c.z, u_c.w);
+	//printf("mu: ( %f, %f, %f, %f )\n", u_c.x, u_c.y, u_c.z, u_c.w);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	prog.use();
+
 	prog.setUniform("u_r0", u_rO);
 	prog.setUniform("u_c", u_c);
+	prog.setUniform("wCoord", u_wCoord);
 
     glBindVertexArray(vaoHandle);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4 );
+
+	text2d.setText("dupa");
+	//text2d.render();
 }
 
 void SceneJulia3D::resize(int w, int h)
@@ -112,6 +124,10 @@ void SceneJulia3D::onKey(unsigned char key, int xmouse, int ymouse)
 			case 'i': u_c.w += 0.01f;
                 break;
 			case 'k': u_c.w -= 0.01f;
+                break;
+			case 'm': u_wCoord += 0.01f;
+                break;
+			case 'n': u_wCoord -= 0.01f;
                 break;
             default:
                 break;
