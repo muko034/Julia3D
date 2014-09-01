@@ -140,7 +140,14 @@ bool GLSLProgram::link()
 
 void GLSLProgram::use()
 {
-    if( handle <= 0 || (! linked) ) return;
+	if( handle <= 0 ) {
+		printf("GLSL program cannot be used. handle <= 0\n");
+		return;
+	}
+    if( ! linked ) {
+		printf("GLSL program cannot be used, it's not linked\n");
+		return;
+	}
     glUseProgram( handle );
 }
 
@@ -321,4 +328,39 @@ bool GLSLProgram::fileExists( const string & fileName )
 
     ret = stat(fileName.c_str(), &info);
     return 0 == ret;
+}
+
+void GLSLProgram::compileAndLinkShaders(std::string vertShaderPath, std::string fragShaderPath)
+{
+	if( ! compileShaderFromFile(vertShaderPath.c_str(), GLSLShader::VERTEX) )
+    {
+        printf("Vertex shader: %s failed to compile!\n%s",
+			vertShaderPath.c_str(),  
+			log().c_str());
+		system("pause");
+        exit(1);
+    }
+	if( ! compileShaderFromFile(fragShaderPath.c_str(), GLSLShader::FRAGMENT))
+    {
+        printf("Fragment shader: %s failed to compile!\n%s",
+			fragShaderPath.c_str(),
+            log().c_str());
+		system("pause");
+        exit(1);
+    }
+    if( ! link() )
+    {
+        printf("Shader program failed to link!\n%s",
+               log().c_str());
+		system("pause");
+        exit(1);
+    }
+
+    if( ! validate() )
+    {
+        printf("Program failed to validate!\n%s",
+               log().c_str());
+		system("pause");
+        exit(1);
+    }
 }

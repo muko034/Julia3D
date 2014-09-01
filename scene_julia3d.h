@@ -34,6 +34,14 @@ public:
     void render();
     void resize(int, int);
 	virtual void onKey(unsigned char key, int xmouse, int ymouse);
+	virtual void onSpecialKey(int key);
+	virtual void onMouseWheel(int direction);
+	void eyeUp();
+	void eyeDown();
+	void eyeLeft();
+	void eyeRight();
+	void zoomIn();
+	void zoomOut();
 };
 
 #endif // SCENEJULIA3D

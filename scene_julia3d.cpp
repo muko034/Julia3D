@@ -1,5 +1,6 @@
 #include "scene_julia3d.h"
 
+#include <GL/freeglut.h>
 #include <cstdio>
 #include <cstdlib>
 
@@ -82,7 +83,7 @@ void SceneJulia3D::render()
     glBindVertexArray(vaoHandle);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4 );
 
-	text2d.setText("dupa");
+	//text2d.setText("dupa");
 	//text2d.render();
 }
 
@@ -134,6 +135,39 @@ void SceneJulia3D::onKey(unsigned char key, int xmouse, int ymouse)
         };
 }
 
+void SceneJulia3D::onSpecialKey(int key)
+{
+	switch (key)
+	{
+		case GLUT_KEY_LEFT:
+			u_rO.x -= 0.1;
+			break;
+		case GLUT_KEY_RIGHT:
+			u_rO.x += 0.1;
+			break;
+		case GLUT_KEY_UP:
+			u_rO.y += 0.1;
+			break;
+		case GLUT_KEY_DOWN:
+			u_rO.y -= 0.1;
+			break;
+		default:
+			break;
+	}
+}
+
+void SceneJulia3D::onMouseWheel(int direction)
+{
+	if (direction > 0)
+	{
+		u_rO.z += 0.1;
+	}
+	else
+	{
+		u_rO.z -= 0.1;
+	}
+}
+
 void SceneJulia3D::compileAndLinkShader()
 {
 	if( ! prog.compileShaderFromFile(VERT_SHADER_PATH, GLSLShader::VERTEX) )
@@ -168,3 +202,34 @@ void SceneJulia3D::compileAndLinkShader()
 
     prog.use();
 }
+
+void SceneJulia3D::eyeUp()
+{
+	u_rO.y += 0.1;
+}
+
+void SceneJulia3D::eyeDown()
+{
+	u_rO.y -= 0.1;
+}
+
+void SceneJulia3D::eyeLeft()
+{
+	u_rO.x -= 0.1;
+}
+
+void SceneJulia3D::eyeRight()
+{
+	u_rO.x += 0.1;
+}
+
+void SceneJulia3D::zoomIn()
+{
+	u_rO.z += 0.1;
+}
+
+void SceneJulia3D::zoomOut()
+{
+	u_rO.z -= 0.1;
+}
+

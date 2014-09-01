@@ -38,6 +38,7 @@ public:
     bool   link();
     bool   validate();
     void   use();
+	void   compileAndLinkShaders(std::string vertShaderPath, std::string fragShaderPath);
 
     string log();
 

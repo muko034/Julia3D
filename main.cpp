@@ -8,6 +8,9 @@
 #include <cstdio>
 #include <iostream>
 
+#include <ft2build.h> 
+#include FT_FREETYPE_H
+
 #include "scene_julia3d.h"
 #include "glutils.h"
 
@@ -158,9 +161,19 @@ void Idle (void)
     glutPostRedisplay ();
 }
 
-void onKey(unsigned char key, int xmouse, int ymouse)
+void OnKey(unsigned char key, int xmouse, int ymouse)
 {
 	gScene->onKey(key, xmouse, ymouse);
+}
+
+void OnSpecialKey(int key, int, int)
+{
+	gScene->onSpecialKey(key);
+}
+
+void OnMouseWheel( int wheel, int direction, int x, int y )
+{
+	gScene->onMouseWheel(direction);
 }
  
 // Entry point - GLUT setup and initialization
@@ -175,7 +188,9 @@ int main( int argc, char** argv )
 	glutReshapeFunc(ChangeSize);
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);
-	glutKeyboardFunc(onKey);
+	glutKeyboardFunc(OnKey);
+	glutSpecialFunc(OnSpecialKey);
+	glutMouseWheelFunc (OnMouseWheel);
 
 	SetupRC();
 
