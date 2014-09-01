@@ -17,7 +17,7 @@ using std::ostringstream;
 
 SceneJulia3D::SceneJulia3D()
 	: m_bgColor(0.3, 0.3, 0.3, 1.0),
-	  text2d(FONT_TEX_PATH, 10, 10, 60),
+	  //text2d(FONT_TEX_PATH, 10, 10, 60),
 	  u_rO(0.0, 0.0, 2.0),
 	  u_c(-0.591,-0.399,0.339,0.437),
 	  //u_c( 0.439000, -0.389000, 0.359000, -0.333000 ),
@@ -35,7 +35,30 @@ void SceneJulia3D::initScene()
 
     glEnable(GL_DEPTH_TEST);
 
-    /////////////////// Create the VBO ////////////////////
+
+
+	text2d.init();
+}
+
+void SceneJulia3D::update( float t )
+{
+
+}
+
+void SceneJulia3D::render()
+{
+	//printf("mu: ( %f, %f, %f, %f )\n", u_c.x, u_c.y, u_c.z, u_c.w);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+	
+	/* Effects of alignment */
+
+	//render_text("The Quick Brown Fox Jumps Over The Lazy Dog", -1 + 8 * sx, 1 - 50 * sy, sx, sy);
+	//render_text("The Misaligned Fox Jumps Over The Lazy Dog", -1 + 8.5 * sx, 1 - 100.5 * sy, sx, sy);
+	//------------------------
+	    /////////////////// Create the VBO ////////////////////
     float positionData[] = {
         -1.0f, -1.0f,
 		//-1.0f, -0.8f,
@@ -60,20 +83,6 @@ void SceneJulia3D::initScene()
     glBindBuffer(GL_ARRAY_BUFFER, handle[0]);
     glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 0, (GLubyte *)NULL );
 
-	text2d.init();
-}
-
-void SceneJulia3D::update( float t )
-{
-
-}
-
-void SceneJulia3D::render()
-{
-	//printf("mu: ( %f, %f, %f, %f )\n", u_c.x, u_c.y, u_c.z, u_c.w);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	prog.use();
 
 	prog.setUniform("u_r0", u_rO);
@@ -82,9 +91,16 @@ void SceneJulia3D::render()
 
     glBindVertexArray(vaoHandle);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4 );
+	glDisableVertexAttribArray(/*attribute_coord*/0);
 
-	//text2d.setText("dupa");
-	//text2d.render();
+	float sx = 2.0/width; //2.0 / glutGet(GLUT_WINDOW_WIDTH);
+	float sy = 2.0/height; //2.0 / glutGet(GLUT_WINDOW_HEIGHT);
+	//printf("width: %d GLUT_WINDOW_WIDTH: %d\n", width, glutGet(GLUT_WINDOW_WIDTH));
+
+	text2d.set("Dupa");
+	text2d.setSize(height*0.03);
+	text2d.render(-1, 1-text2d.getSize()*sy, sx, sy);
+	text2d.render(-1, 1-text2d.getSize()*2*sy, sx, sy);
 }
 
 void SceneJulia3D::resize(int w, int h)
@@ -140,16 +156,16 @@ void SceneJulia3D::onSpecialKey(int key)
 	switch (key)
 	{
 		case GLUT_KEY_LEFT:
-			u_rO.x -= 0.1;
+			u_rO.x -= 0.1f;
 			break;
 		case GLUT_KEY_RIGHT:
-			u_rO.x += 0.1;
+			u_rO.x += 0.1f;
 			break;
 		case GLUT_KEY_UP:
-			u_rO.y += 0.1;
+			u_rO.y += 0.1f;
 			break;
 		case GLUT_KEY_DOWN:
-			u_rO.y -= 0.1;
+			u_rO.y -= 0.1f;
 			break;
 		default:
 			break;
@@ -160,11 +176,11 @@ void SceneJulia3D::onMouseWheel(int direction)
 {
 	if (direction > 0)
 	{
-		u_rO.z += 0.1;
+		u_rO.z += 0.1f;
 	}
 	else
 	{
-		u_rO.z -= 0.1;
+		u_rO.z -= 0.1f;
 	}
 }
 
@@ -205,31 +221,31 @@ void SceneJulia3D::compileAndLinkShader()
 
 void SceneJulia3D::eyeUp()
 {
-	u_rO.y += 0.1;
+	u_rO.y += 0.1f;
 }
 
 void SceneJulia3D::eyeDown()
 {
-	u_rO.y -= 0.1;
+	u_rO.y -= 0.1f;
 }
 
 void SceneJulia3D::eyeLeft()
 {
-	u_rO.x -= 0.1;
+	u_rO.x -= 0.1f;
 }
 
 void SceneJulia3D::eyeRight()
 {
-	u_rO.x += 0.1;
+	u_rO.x += 0.1f;
 }
 
 void SceneJulia3D::zoomIn()
 {
-	u_rO.z += 0.1;
+	u_rO.z += 0.1f;
 }
 
 void SceneJulia3D::zoomOut()
 {
-	u_rO.z -= 0.1;
+	u_rO.z -= 0.1f;
 }
 

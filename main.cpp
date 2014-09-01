@@ -8,9 +8,6 @@
 #include <cstdio>
 #include <iostream>
 
-#include <ft2build.h> 
-#include FT_FREETYPE_H
-
 #include "scene_julia3d.h"
 #include "glutils.h"
 
@@ -23,7 +20,7 @@ void drawFPS();
  
 void ChangeSize(int w, int h)
 {
-	glViewport(0, 0, w, h);
+	gScene->resize(w, h);
 }
 
 void SetupRC()
@@ -190,7 +187,7 @@ int main( int argc, char** argv )
 	glutIdleFunc(Idle);
 	glutKeyboardFunc(OnKey);
 	glutSpecialFunc(OnSpecialKey);
-	glutMouseWheelFunc (OnMouseWheel);
+	glutMouseWheelFunc(OnMouseWheel);
 
 	SetupRC();
 

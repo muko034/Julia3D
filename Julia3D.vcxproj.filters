@@ -51,5 +51,7 @@
   <ItemGroup>
     <None Include="shader\julia.frag" />
     <None Include="shader\julia.vert" />
+    <None Include="shader\text2d.frag" />
+    <None Include="shader\text2d.vert" />
   </ItemGroup>
 </Project>
