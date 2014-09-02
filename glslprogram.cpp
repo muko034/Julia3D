@@ -9,6 +9,9 @@ using std::ios;
 #include <sstream>
 using std::ostringstream;
 
+#include <string>
+using std::string;
+
 #include <sys/stat.h>
 
 GLSLProgram::GLSLProgram() : handle(0), linked(false) { }
@@ -42,7 +45,10 @@ bool GLSLProgram::compileShaderFromFile( const char * fileName,
     }
     inFile.close();
 
-    return compileShaderFromString(code.str(), type);
+	string strCode = code.str();
+	strCode[strCode.size()-1] = '\0';
+
+    return compileShaderFromString(strCode, type);
 }
 
 bool GLSLProgram::compileShaderFromString( const string & source, GLSLShader::GLSLShaderType type )
