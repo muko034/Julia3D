@@ -79,15 +79,15 @@
   <ItemGroup>
     <ClCompile Include="glslprogram.cpp" />
     <ClCompile Include="glutils.cpp" />
+    <ClCompile Include="julia3d.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="scene_julia3d.cpp" />
     <ClCompile Include="text2d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glslprogram.h" />
     <ClInclude Include="glutils.h" />
+    <ClInclude Include="julia3d.h" />
     <ClInclude Include="scene.h" />
-    <ClInclude Include="scene_julia3d.h" />
     <ClInclude Include="text2d.h" />
   </ItemGroup>
   <ItemGroup>

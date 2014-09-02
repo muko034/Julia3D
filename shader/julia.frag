@@ -1,7 +1,7 @@
 #version 400
 precision highp float;
 
-#define BOUNDING_RADIUS_2	1.4
+#define BOUNDING_RADIUS_2	2.0
 #define ESCAPE_THRESHOLD	1e1
 #define DEL					1e-4
 
@@ -165,9 +165,9 @@ void main()
 	rD = normalize(rD);
 	if (intersectSphere(r0, rD) != 0) {		// ray doesn't intersect the sphere
 		//vFragColor = vec4(1.0, 0.0, 0.0, 1.0);
-		//vFragColor = backgroundColor;
-		discard;
 		//return;
+		discard;
+		
 	}
 	
 	float dist = intersectQJulia(r0, rD, mu, maxIterations, epsilon);

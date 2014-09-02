@@ -1,8 +1,8 @@
 #include "text2d.h"
+#include <sstream>
 
-#include <glm/glm.hpp> 
-
-#define FONT_PATH "font/FreeSans.ttf"
+#define FONT_PATH "font/CourierNew.ttf"
+#define BOLD_FONT_PATH "font/CourierNewBold.ttf"
 #define VERT_SHADER_PATH "shader/text2d.vert"
 #define FRAG_SHADER_PATH "shader/text2d.frag"
 
@@ -15,6 +15,33 @@ struct point {
 	GLfloat t;
 };
 
+void Tokenize(const string& str,
+              list<string>& tokens,
+              const string& delimiters = "\n")
+{
+    // Skip delimiters at beginning.
+    string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+    // Find first "non-delimiter".
+    string::size_type pos     = str.find_first_of(delimiters, lastPos);
+
+    while (string::npos != pos || string::npos != lastPos)
+    {
+        // Found a token, add it to the vector.
+        tokens.push_back(str.substr(lastPos, pos - lastPos));
+        // Skip delimiters.  Note the "not_of"
+        lastPos = str.find_first_not_of(delimiters, pos);
+        // Find next "non-delimiter"
+        pos = str.find_first_of(delimiters, lastPos);
+    }
+}
+
+Text2D::Text2D()
+	: m_size(12),
+	  m_bold(false),
+	  m_color(1.0, 1.0, 1.0, 1.0)
+{
+}
+
 void Text2D::init()
 {
 	/* Initialize the FreeType2 library */
@@ -26,6 +53,12 @@ void Text2D::init()
 	/* Load a font */
 	if (FT_New_Face(m_ft, FONT_PATH, 0, &m_face)) {
 		fprintf(stderr, "Could not open font %s\n", FONT_PATH);
+		return;
+	}
+
+	/* Load a font */
+	if (FT_New_Face(m_ft, BOLD_FONT_PATH, 0, &m_boldFace)) {
+		fprintf(stderr, "Could not open font %s\n", BOLD_FONT_PATH);
 		return;
 	}
 
@@ -45,9 +78,9 @@ void Text2D::render(float x, float y, float sx, float sy)
 
 	/* Set font size to 48 pixels, color to black */
 	FT_Set_Pixel_Sizes(m_face, 0, m_size);
-	m_prog.setUniform("color", glm::vec4(1,1,1,1));
+	m_prog.setUniform("color", m_color);
 
-	const char *p;
+	//const char *p;
 	FT_GlyphSlot g = m_face->glyph;
 
 	/* Create a texture that will be used to hold one "glyph" */
@@ -74,14 +107,24 @@ void Text2D::render(float x, float y, float sx, float sy)
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 	glVertexAttribPointer(0/*attribute_coord*/, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-	/* Loop through all characters */
-	//for (p = text; *p; p++) {
-	//	/* Try to load and render the character */
-	//	if (FT_Load_Char(m_face, *p, FT_LOAD_RENDER))
-	//		continue;
-	for (int i=0; i < m_txt.length(); ++i) {
+	list<string> lines = splitText();
+	int i = 0; 
+	for (string &line : lines) {
+		renderLine(line, x, y-m_size*i*sy, sx, sy);
+		++i;
+	}
+	
+	glDisableVertexAttribArray(/*attribute_coord*/0);
+	glDeleteTextures(1, &tex);
+}
+
+void Text2D::renderLine(const std::string &line, float x, float y, float sx, float sy)
+{
+	FT_GlyphSlot g = m_face->glyph;
+
+	for (int i=0; i < line.length(); ++i) {
 		/* Try to load and render the character */
-		if (FT_Load_Char(m_face, m_txt[i], FT_LOAD_RENDER))
+		if (FT_Load_Char(m_face, line[i], FT_LOAD_RENDER))
 			continue;
 
 		/* Upload the "bitmap", which contains an 8-bit grayscale image, as an alpha texture */
@@ -108,7 +151,19 @@ void Text2D::render(float x, float y, float sx, float sy)
 		x += (g->advance.x >> 6) * sx;
 		y += (g->advance.y >> 6) * sy;
 	}
+}
 
-	glDisableVertexAttribArray(/*attribute_coord*/0);
-	glDeleteTextures(1, &tex);
+void Text2D::addLineText(std::string line)
+{
+	m_txt.append(line);
+	m_txt.append("\n");
+}
+
+std::list<std::string> Text2D::splitText()
+{
+    list<string> tokens;
+
+    Tokenize(m_txt, tokens);
+
+	return tokens;
 }

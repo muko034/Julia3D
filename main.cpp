@@ -7,28 +7,34 @@
 #include <glm/glm.hpp>
 #include <cstdio>
 #include <iostream>
+#include <map>
+#include <utility>
+#include <functional>
 
-#include "scene_julia3d.h"
 #include "glutils.h"
+#include "julia3d.h"
+#include "text2d.h"
 
 using namespace std;
+using namespace std::placeholders;
 
-Scene *gScene;
 float gFps = 0;
-
-void drawFPS();
+Julia3D g_julia3d;
+Text2D g_text2d;
+int g_width;
+int g_height;
+unsigned char g_activeKey = 0;
+float g_step = 0.01f;
  
 void ChangeSize(int w, int h)
 {
-	gScene->resize(w, h);
+	glViewport(0,0,w,h);
+	g_width = w;
+    g_height = h;
 }
 
 void SetupRC()
 {
-    //////////////// PLUG IN SCENE HERE /////////////////
-	gScene = new SceneJulia3D();
-    ////////////////////////////////////////////////////
-
     GLenum err = glewInit();
     if( GLEW_OK != err )
     {
@@ -38,23 +44,26 @@ void SetupRC()
 
     GLUtils::dumpGLInfo();
 
-    gScene->initScene();
+	g_julia3d.init();
+	g_text2d.init();
+	
 }
 
 void RenderScene()
 {
-	// czyszczenie okna
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glClearColor(0.3, 0.3, 0.3, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
 
-	gScene->update(0.0f);
-	gScene->render();
+	g_julia3d.render();
 
-	drawFPS();
+	float sx = 2.0 / g_width;
+	float sy = 2.0 / g_height;
+	
+	g_text2d.setFontSize(floor(g_height*0.03));
+	g_text2d.render(-0.97, 1-g_text2d.getFontSize()*sy, sx, sy);
 
 	// Zamiana buforow
 	glutSwapBuffers();
-	//// petla animacji
-	//glutPostRedisplay();
 }
 
 //-------------------------------------------------------------------------
@@ -89,70 +98,19 @@ void calculateFPS()
     }
 }
 
-//-------------------------------------------------------------------------
-//  Draws a string at the specified coordinates.
-//-------------------------------------------------------------------------
-void printw (float x, float y, float z, char* format, ...)
-{
-	//  Pointer to a font style..
-	//  Fonts supported by GLUT are: GLUT_BITMAP_8_BY_13, 
-	//  GLUT_BITMAP_9_BY_15, GLUT_BITMAP_TIMES_ROMAN_10, 
-	//  GLUT_BITMAP_TIMES_ROMAN_24, GLUT_BITMAP_HELVETICA_10,
-	//  GLUT_BITMAP_HELVETICA_12, and GLUT_BITMAP_HELVETICA_18.
-	GLvoid *font_style = GLUT_BITMAP_TIMES_ROMAN_24;
-
-	va_list args;	//  Variable argument list
-	int len;		//	String length
-	int i;			//  Iterator
-	char * text;	//	Text
-
-	//  Initialize a variable argument list
-	va_start(args, format);
-
-	//  Return the number of characters in the string referenced the list of arguments.
-	//  _vscprintf doesn't count terminating '\0' (that's why +1)
-	len = _vscprintf(format, args) + 1; 
-
-	//  Allocate memory for a string of the specified size
-	text = (char *)malloc(len * sizeof(char));
-
-	//  Write formatted output using a pointer to the list of arguments
-	vsprintf_s(text, len, format, args);
-
-	//  End using variable argument list 
-	va_end(args);
-
-	//  Specify the raster position for pixel operations.
-	glRasterPos3f (x, y, z);
-
-	//  Draw the characters one by one
-    for (i = 0; text[i] != '\0'; i++)
-        glutBitmapCharacter(font_style, text[i]);
-
-	//  Free the allocated memory for the string
-	free(text);
-}
-
-//-------------------------------------------------------------------------
-//  Draw FPS
-//-------------------------------------------------------------------------
-void drawFPS()
-{
-    //  Load the identity matrix so that FPS string being drawn
-    //  won't get animates
-	glLoadIdentity ();
-
-	//  Print the FPS to the window
-	printw (-0.9, -0.9, 0, "FPS: %4.2f", gFps);
-}
-
 void Idle (void)
 {
     //  Animate the object
-	gScene->update(0.0f);
 
     //  Calculate FPS
     calculateFPS();
+	g_text2d.clearText();
+	g_text2d.addLineText(string("FPS: ") + to_string(gFps));
+	g_text2d.addLineText(string("[x] q_x: ") + to_string(g_julia3d.getQ().x));
+	g_text2d.addLineText(string("[y] q_y: ") + to_string(g_julia3d.getQ().y));
+	g_text2d.addLineText(string("[z] q_z: ") + to_string(g_julia3d.getQ().z));
+	g_text2d.addLineText(string("[w] q_w: ") + to_string(g_julia3d.getQ().w));
+	g_text2d.addLineText(string("[d] slice: ") + to_string(g_julia3d.getSlice()));
 
     //  Call display function (draw the current frame)
     glutPostRedisplay ();
@@ -160,17 +118,68 @@ void Idle (void)
 
 void OnKey(unsigned char key, int xmouse, int ymouse)
 {
-	gScene->onKey(key, xmouse, ymouse);
+	if (key == '+' || key == '-')
+	{
+		map< unsigned char, pair< function<void(float)>, function<void(float)> > > func;
+		func['x'] = make_pair(bind(&Julia3D::incQx, &g_julia3d, _1), bind(&Julia3D::decQx, &g_julia3d, _1));
+		func['y'] = make_pair(bind(&Julia3D::incQy, &g_julia3d, _1), bind(&Julia3D::decQy, &g_julia3d, _1));
+		func['z'] = make_pair(bind(&Julia3D::incQz, &g_julia3d, _1), bind(&Julia3D::decQz, &g_julia3d, _1));
+		func['w'] = make_pair(bind(&Julia3D::incQw, &g_julia3d, _1), bind(&Julia3D::decQw, &g_julia3d, _1));
+		func['d'] = make_pair(bind(&Julia3D::incSlice, &g_julia3d, _1), bind(&Julia3D::decSlice, &g_julia3d, _1));
+		try
+		{
+
+			if (key == '+') 
+			{
+				func.at(g_activeKey).first(g_step);
+			} else if (key == '-')
+			{
+				func.at(g_activeKey).second(g_step);
+			}
+		}
+		catch (out_of_range) { }
+	} 
+	else if ( key == 'x' ||
+			  key == 'y' ||
+			  key == 'z' ||
+			  key == 'w' ||
+			  key == 'd'    )
+	{
+		g_activeKey = key;
+	}
 }
 
 void OnSpecialKey(int key, int, int)
 {
-	gScene->onSpecialKey(key);
+	switch (key)
+	{
+		case GLUT_KEY_LEFT:
+			g_julia3d.eyeLeft();
+			break;
+		case GLUT_KEY_RIGHT:
+			g_julia3d.eyeRight();
+			break;
+		case GLUT_KEY_UP:
+			g_julia3d.eyeUp();
+			break;
+		case GLUT_KEY_DOWN:
+			g_julia3d.eyeDown();
+			break;
+		default:
+			break;
+	}
 }
 
 void OnMouseWheel( int wheel, int direction, int x, int y )
 {
-	gScene->onMouseWheel(direction);
+	if (direction > 0)
+	{
+		g_julia3d.zoomIn();
+	}
+	else
+	{
+		g_julia3d.zoomOut();
+	}
 }
  
 // Entry point - GLUT setup and initialization
@@ -179,7 +188,7 @@ int main( int argc, char** argv )
 	//gltSetWorkingDirectory(argv[0]);
 
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA );
 	glutInitWindowSize(800, 600);
 	glutCreateWindow("Julia3D");
 	glutReshapeFunc(ChangeSize);

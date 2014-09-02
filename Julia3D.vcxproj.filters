@@ -24,10 +24,10 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="scene_julia3d.cpp">
+    <ClCompile Include="text2d.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="text2d.cpp">
+    <ClCompile Include="julia3d.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,10 +41,10 @@
     <ClInclude Include="scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="scene_julia3d.h">
+    <ClInclude Include="text2d.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="text2d.h">
+    <ClInclude Include="julia3d.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
