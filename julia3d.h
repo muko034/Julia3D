@@ -15,6 +15,7 @@ public:
 	void render();
 	glm::vec4 getQ() const { return m_q; }
 	float getSlice() const { return m_slice; }
+	int getMaxIterations() const { return m_maxIterations; }
 	void eyeUp() { m_eye.y += 0.1f; }
 	void eyeDown() { m_eye.y -= 0.1f; }
 	void eyeLeft() { m_eye.x -= 0.1f; }
@@ -31,6 +32,8 @@ public:
 	void decQw(float step) { m_q.w -= step; }
 	void incSlice(float step) { m_slice += step; }
 	void decSlice(float step) { m_slice -= step; }
+	void incMaxIterations() { ++m_maxIterations; }
+	void decMaxIterations() { --m_maxIterations; }
 private:
 	unsigned m_vbo;
 	GLSLProgram m_prog;
@@ -38,6 +41,7 @@ private:
 	glm::vec4 m_q;
 	float m_slice;
 	float m_step;
+	int m_maxIterations;
 };
 
 #endif // JULIA3D_H

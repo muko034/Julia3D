@@ -111,6 +111,7 @@ void Idle (void)
 	g_text2d.addLineText(string("[z] q_z: ") + to_string(g_julia3d.getQ().z));
 	g_text2d.addLineText(string("[w] q_w: ") + to_string(g_julia3d.getQ().w));
 	g_text2d.addLineText(string("[d] slice: ") + to_string(g_julia3d.getSlice()));
+	g_text2d.addLineText(string("[i] max iterations: ") + to_string(g_julia3d.getMaxIterations()));
 
     //  Call display function (draw the current frame)
     glutPostRedisplay ();
@@ -120,21 +121,22 @@ void OnKey(unsigned char key, int xmouse, int ymouse)
 {
 	if (key == '+' || key == '-')
 	{
-		map< unsigned char, pair< function<void(float)>, function<void(float)> > > func;
-		func['x'] = make_pair(bind(&Julia3D::incQx, &g_julia3d, _1), bind(&Julia3D::decQx, &g_julia3d, _1));
-		func['y'] = make_pair(bind(&Julia3D::incQy, &g_julia3d, _1), bind(&Julia3D::decQy, &g_julia3d, _1));
-		func['z'] = make_pair(bind(&Julia3D::incQz, &g_julia3d, _1), bind(&Julia3D::decQz, &g_julia3d, _1));
-		func['w'] = make_pair(bind(&Julia3D::incQw, &g_julia3d, _1), bind(&Julia3D::decQw, &g_julia3d, _1));
-		func['d'] = make_pair(bind(&Julia3D::incSlice, &g_julia3d, _1), bind(&Julia3D::decSlice, &g_julia3d, _1));
+		map< unsigned char, pair< function<void(void)>, function<void(void)> > > func;
+		func['x'] = make_pair(bind(&Julia3D::incQx, &g_julia3d, g_step), bind(&Julia3D::decQx, &g_julia3d, g_step));
+		func['y'] = make_pair(bind(&Julia3D::incQy, &g_julia3d, g_step), bind(&Julia3D::decQy, &g_julia3d, g_step));
+		func['z'] = make_pair(bind(&Julia3D::incQz, &g_julia3d, g_step), bind(&Julia3D::decQz, &g_julia3d, g_step));
+		func['w'] = make_pair(bind(&Julia3D::incQw, &g_julia3d, g_step), bind(&Julia3D::decQw, &g_julia3d, g_step));
+		func['d'] = make_pair(bind(&Julia3D::incSlice, &g_julia3d, g_step), bind(&Julia3D::decSlice, &g_julia3d, g_step));
+		func['i'] = make_pair(bind(&Julia3D::incMaxIterations, &g_julia3d), bind(&Julia3D::decMaxIterations, &g_julia3d));
 		try
 		{
 
 			if (key == '+') 
 			{
-				func.at(g_activeKey).first(g_step);
+				func.at(g_activeKey).first();
 			} else if (key == '-')
 			{
-				func.at(g_activeKey).second(g_step);
+				func.at(g_activeKey).second();
 			}
 		}
 		catch (out_of_range) { }
@@ -143,6 +145,7 @@ void OnKey(unsigned char key, int xmouse, int ymouse)
 			  key == 'y' ||
 			  key == 'z' ||
 			  key == 'w' ||
+			  key == 'i' ||
 			  key == 'd'    )
 	{
 		g_activeKey = key;

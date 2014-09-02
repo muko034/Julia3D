@@ -9,6 +9,7 @@ uniform vec3 u_r0;				// TEXCOORD0 ray origin
 //uniform vec3 rD;				// TEXCOORD1 ray direction (unit length)
 uniform vec4 u_c;
 uniform float wCoord;			// wsp w dla quaterniona (x, y, z, w)
+uniform int u_maxIterations;
 
 //uniform vec4 mu;				// quaternion constant specifying the particular set (C)
 //uniform float epsilon;			//
@@ -94,7 +95,7 @@ float intersectQJulia(inout vec3 r0, inout vec3 rD, vec4 c, int maxIterations, f
 
 		vec4 zp = vec4(1.0, 0.0, 0.0, 0.0);
 
-		iterateIntersect(z, zp, c, maxIterations);
+		iterateIntersect(z, zp, c, u_maxIterations);
 
 		float normZ = length(z);
 		dist = 0.5 * normZ * log(normZ) / length(zp);
@@ -158,7 +159,6 @@ void main()
 	const vec3 eye				= vec3(10.0);
 	const vec3 light			= normalize(vec3(-0.3, 0.0, 1.0));
 	const bool renderShadows	= true;
-	const int maxIterations		= 8;
 
 	vec4 color;
 
@@ -170,10 +170,10 @@ void main()
 		
 	}
 	
-	float dist = intersectQJulia(r0, rD, mu, maxIterations, epsilon);
+	float dist = intersectQJulia(r0, rD, mu, u_maxIterations, epsilon);
 
 	if (dist < epsilon) {
-		vec3 N = normEstimate(r0, mu, maxIterations);
+		vec3 N = normEstimate(r0, mu, u_maxIterations);
 		
 		color.xyz = Phong(light, rD, r0, N);
 		color.w = 1.0;
@@ -181,7 +181,7 @@ void main()
 		if (false/*renderShadows == true*/) {
 			vec3 L = normalize(light - r0);
 			r0 += N * epsilon * 2.0;
-			dist = intersectQJulia(r0, L, mu, maxIterations, epsilon);
+			dist = intersectQJulia(r0, L, mu, u_maxIterations, epsilon);
 
 			if (dist < epsilon) {
 				color.xyz *= 0.4;

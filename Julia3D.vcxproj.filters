@@ -38,9 +38,6 @@
     <ClInclude Include="glutils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="text2d.h">
       <Filter>Header Files</Filter>
     </ClInclude>

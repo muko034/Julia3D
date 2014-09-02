@@ -9,7 +9,8 @@ Julia3D::Julia3D()
 	  m_eye(0.0, 0.0, 2.0),
 	  m_q(-0.591,-0.399,0.339,0.437),
 	  m_slice(0.0f),
-	  m_step(0.01f)
+	  m_step(0.01f),
+	  m_maxIterations(8)
 {
 }
 
@@ -54,6 +55,7 @@ void Julia3D::render()
 	m_prog.setUniform("u_r0", m_eye);
 	m_prog.setUniform("u_c", m_q);
 	m_prog.setUniform("wCoord", m_slice);
+	m_prog.setUniform("u_maxIterations", m_maxIterations);
 
 	glBindVertexArray(m_vbo);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4 );
