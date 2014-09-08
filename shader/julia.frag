@@ -4,22 +4,15 @@ precision highp float;
 #define BOUNDING_RADIUS_2	2.0
 #define ESCAPE_THRESHOLD	1e1
 #define DEL					1e-4
+#define EPSILON				1e-3
 
-uniform vec3 u_r0;				// TEXCOORD0 ray origin
-//uniform vec3 rD;				// TEXCOORD1 ray direction (unit length)
-uniform vec4 u_c;
-uniform float wCoord;			// wsp w dla quaterniona (x, y, z, w)
+// ZMIENNE TYPU UNIFORM
+uniform vec3 u_rO;				
+uniform vec4 u_q;
+uniform float u_slice;			
 uniform int u_maxIterations;
 
-//uniform vec4 mu;				// quaternion constant specifying the particular set (C)
-//uniform float epsilon;			//
-//uniform vec3 eye;
-//uniform vec3 light;
-//uniform bool renderShadows;
-//uniform int maxIterations;
-
 in vec2 fragCoord;
-
 out vec4 vFragColor;
 
 vec4 quatMult(vec4 q1, vec4 q2)
@@ -42,22 +35,22 @@ vec4 quatSq(vec4 q)
 	return r;
 }
 
-void iterateIntersect(inout vec4 q, inout vec4 qp, vec4 c, int maxIterations)
+void iterateSequence(inout vec4 z, inout vec4 z_p)
 {
-	for (int i=0; i < maxIterations; i++) {
-		qp = 2.0 * quatMult(q, qp);
-		q = quatSq(q) + c;
+	for (int i=0; i < u_maxIterations; i++) {
+		z_p = 2.0 * quatMult(z, z_p);
+		z = quatSq(z) + u_q;
 
-		if (dot(q, q) > ESCAPE_THRESHOLD) {
+		if (dot(z, z) > ESCAPE_THRESHOLD) {
 			break;
 		}
 	}
 }
 
-vec3 normEstimate(vec3 p, vec4 c, int maxIterations)
+vec3 approximateNorm(vec3 p)
 {
 	vec3 N;
-	vec4 qP = vec4(p, wCoord);
+	vec4 qP = vec4(p, u_slice);
 	float gradX, gradY, gradZ;
 
 	vec4 gx1 = qP - vec4(DEL, 0.0, 0.0, 0.0);
@@ -67,13 +60,13 @@ vec3 normEstimate(vec3 p, vec4 c, int maxIterations)
 	vec4 gz1 = qP - vec4(0.0, 0.0, DEL, 0.0);
 	vec4 gz2 = qP + vec4(0.0, 0.0, DEL, 0.0);
 
-	for (int i=0; i < maxIterations; i++) {
-		gx1 = quatSq(gx1) + c;
-		gx2 = quatSq(gx2) + c;
-		gy1 = quatSq(gy1) + c;
-		gy2 = quatSq(gy2) + c;
-		gz1 = quatSq(gz1) + c;
-		gz2 = quatSq(gz2) + c;
+	for (int i=0; i < u_maxIterations; i++) {
+		gx1 = quatSq(gx1) + u_q;
+		gx2 = quatSq(gx2) + u_q;
+		gy1 = quatSq(gy1) + u_q;
+		gy2 = quatSq(gy2) + u_q;
+		gz1 = quatSq(gz1) + u_q;
+		gz2 = quatSq(gz2) + u_q;
 	}
 
 	gradX = length(gx2) - length(gx1);
@@ -85,24 +78,24 @@ vec3 normEstimate(vec3 p, vec4 c, int maxIterations)
 	return N;
 }
 
-float intersectQJulia(inout vec3 r0, inout vec3 rD, vec4 c, int maxIterations, float epsilon)
+float rayMarching(inout vec3 p, vec3 rD)
 {
 	float dist;
 	int i = 0;
 	while (true) {
-	//while (i<1000) {
-		vec4 z = vec4(r0, wCoord);
+		vec4 z = vec4(p, u_slice);
 
 		vec4 zp = vec4(1.0, 0.0, 0.0, 0.0);
 
-		iterateIntersect(z, zp, c, u_maxIterations);
-
+		iterateSequence(z, zp);
+	
 		float normZ = length(z);
 		dist = 0.5 * normZ * log(normZ) / length(zp);
 
-		r0 += rD * dist;	// (step)
+		p += rD * dist;	// (step)
 
-		if (dist < epsilon || dot(r0, r0) > BOUNDING_RADIUS_2) {
+		if (dist < EPSILON || 
+		    dot(p, p) > BOUNDING_RADIUS_2) {
 			break;
 		}
 		++i;
@@ -127,63 +120,59 @@ vec3 Phong(vec3 light, vec3 eye, vec3 pt, vec3 N)
 	return ( diffuse * max(NdotL, 0) + specularity * pow(max(dot(E, R), 0), specularExponent) );
 }
 
-int intersectSphere(inout vec3 r0, vec3 rD)
+int boundingSphere(inout vec3 p, vec3 rD)
 {
 	float A, B, C, d, t0, t1, t;
 
 	//A = dot(rD, rD);
 	A = 1.0;
-	B = 2.0 * dot(r0, rD);
-	C = dot(r0, r0) - BOUNDING_RADIUS_2;
+	B = 2.0 * dot(p, rD);
+	C = dot(p, p) - BOUNDING_RADIUS_2;
 	d = B*B - 4*A*C;
-	if (d <= 0) {
+	if (d < 0) {
 		return 1;
 	} 
 	d = sqrt(d);	// delta
-	t0 = (-B + d) * 0.5 / A;
-	t1 = (-B - d) * 0.5 / A;
+	t0 = (-B + d) * 0.5;
+	t1 = (-B - d) * 0.5;
+	//t1 /= A;
+	//t0 /= A;
 	t = min(t0, t1);
-	r0 += t * rD;
+	p += t * rD;
 
 	return 0;
 }
 
 void main()
 {
-	vec3 r0						= u_r0;			
-	vec3 rD						= normalize(vec3(fragCoord, -1.0));
-
-	//const vec4 mu				= vec4(-0.591,-0.399,0.339,0.437);
-	vec4 mu						= u_c;
-	const float epsilon			= 1e-4;							
-	const vec3 eye				= vec3(10.0);
-	const vec3 light			= normalize(vec3(-0.3, 0.0, 1.0));
+	vec3 rO						= u_rO;			
+	const vec3 rD				= normalize(vec3(fragCoord, -1.0));
+					
+	const vec3 light			= vec3(-0.3, 0.0, 1.0);
 	const bool renderShadows	= true;
 
 	vec4 color;
 
-	rD = normalize(rD);
-	if (intersectSphere(r0, rD) != 0) {		// ray doesn't intersect the sphere
+	if (boundingSphere(rO, rD) != 0) {		// ray doesn't intersect the sphere
 		//vFragColor = vec4(1.0, 0.0, 0.0, 1.0);
 		//return;
-		discard;
-		
+		discard;		
 	}
 	
-	float dist = intersectQJulia(r0, rD, mu, u_maxIterations, epsilon);
+	float dist = rayMarching(rO, rD);
 
-	if (dist < epsilon) {
-		vec3 N = normEstimate(r0, mu, u_maxIterations);
+	if (dist < EPSILON) {
+		vec3 N = approximateNorm(rO);
 		
-		color.xyz = Phong(light, rD, r0, N);
+		color.xyz = Phong(light, rD, rO, N);
 		color.w = 1.0;
 
 		if (false/*renderShadows == true*/) {
-			vec3 L = normalize(light - r0);
-			r0 += N * epsilon * 2.0;
-			dist = intersectQJulia(r0, L, mu, u_maxIterations, epsilon);
+			vec3 L = normalize(light - rO);
+			rO += N * EPSILON * 2.0;
+			dist = rayMarching(rO, L);
 
-			if (dist < epsilon) {
+			if (dist < EPSILON) {
 				color.xyz *= 0.4;
 			}
 		}

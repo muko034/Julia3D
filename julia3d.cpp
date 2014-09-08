@@ -52,9 +52,9 @@ void Julia3D::render()
 
 	m_prog.use();
 
-	m_prog.setUniform("u_r0", m_eye);
-	m_prog.setUniform("u_c", m_q);
-	m_prog.setUniform("wCoord", m_slice);
+	m_prog.setUniform("u_rO", m_eye);
+	m_prog.setUniform("u_q", m_q);
+	m_prog.setUniform("u_slice", m_slice);
 	m_prog.setUniform("u_maxIterations", m_maxIterations);
 
 	glBindVertexArray(m_vbo);
