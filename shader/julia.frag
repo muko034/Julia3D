@@ -78,30 +78,32 @@ vec3 approximateNorm(vec3 p)
 	return N;
 }
 
-float rayMarching(inout vec3 p, vec3 rD)
+bool rayMarching(inout vec3 p, vec3 rD)
 {
 	float dist;
-	int i = 0;
+	bool foundIntersection = false;
 	while (true) {
-		vec4 z = vec4(p, u_slice);
-
+		vec4 z = vec4(p, u_slice);	// czwarta wspolrzedna kwaternionu stala - okresla przekroj zbioru Julii 4D
 		vec4 zp = vec4(1.0, 0.0, 0.0, 0.0);
 
 		iterateSequence(z, zp);
 	
 		float normZ = length(z);
-		dist = 0.5 * normZ * log(normZ) / length(zp);
+		dist = 0.5 * normZ * log(normZ) / length(zp);	// oszacowanie odleglosci od zbioru Julii
 
-		p += rD * dist;	// (step)
+		p += rD * dist;	// krok wzd³u¿ promienia
 
-		if (dist < EPSILON || 
-		    dot(p, p) > BOUNDING_RADIUS_2) {
+		if (dist < EPSILON) {	
+			foundIntersection = true;	// znaleziono przeciecie promienia ze zbiorem
 			break;
-		}
-		++i;
+		} 
+		if (dot(p, p) > BOUNDING_RADIUS_2) { // aktualnie przetwarzany punkt poza sfera otaczajaca
+			foundIntersection = false;	// nie znaleziono przeciecie promienia ze zbiorem
+			break;
+		} 
 	}
 
-	return dist;
+	return foundIntersection;
 }
 
 vec3 Phong(vec3 light, vec3 eye, vec3 pt, vec3 N)
@@ -158,10 +160,10 @@ void main()
 		//return;
 		discard;		
 	}
-	
-	float dist = rayMarching(rO, rD);
 
-	if (dist < EPSILON) {
+	bool foundIntersection = rayMarching(rO, rD);
+
+	if (foundIntersection) {
 		vec3 N = approximateNorm(rO);
 		
 		color.xyz = Phong(light, rD, rO, N);
@@ -170,9 +172,8 @@ void main()
 		if (false/*renderShadows == true*/) {
 			vec3 L = normalize(light - rO);
 			rO += N * EPSILON * 2.0;
-			dist = rayMarching(rO, L);
-
-			if (dist < EPSILON) {
+			foundIntersection = rayMarching(rO, L);
+			if (foundIntersection) {
 				color.xyz *= 0.4;
 			}
 		}
