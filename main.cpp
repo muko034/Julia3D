@@ -8,7 +8,8 @@
 #include <cstdio>
 #include <iostream>
 #include <map>
-#include <utility>
+//#include <utility>
+#include <tuple>
 #include <functional>
 
 #include "glutils.h"
@@ -106,11 +107,11 @@ void Idle (void)
     calculateFPS();
 	g_text2d.clearText();
 	g_text2d.addLineText(string("FPS: ") + to_string(gFps));
-	g_text2d.addLineText(string("[x] q_x: ") + to_string(g_julia3d.getQ().x));
-	g_text2d.addLineText(string("[y] q_y: ") + to_string(g_julia3d.getQ().y));
-	g_text2d.addLineText(string("[z] q_z: ") + to_string(g_julia3d.getQ().z));
-	g_text2d.addLineText(string("[w] q_w: ") + to_string(g_julia3d.getQ().w));
-	g_text2d.addLineText(string("[d] slice: ") + to_string(g_julia3d.getSlice()));
+	g_text2d.addLineText(string("[1] q_x: ") + to_string(g_julia3d.getQ().x));
+	g_text2d.addLineText(string("[2] q_y: ") + to_string(g_julia3d.getQ().y));
+	g_text2d.addLineText(string("[3] q_z: ") + to_string(g_julia3d.getQ().z));
+	g_text2d.addLineText(string("[4] q_w: ") + to_string(g_julia3d.getQ().w));
+	g_text2d.addLineText(string("[l] slice: ") + to_string(g_julia3d.getSlice()));
 	g_text2d.addLineText(string("[i] max iterations: ") + to_string(g_julia3d.getMaxIterations()));
 
     //  Call display function (draw the current frame)
@@ -119,36 +120,57 @@ void Idle (void)
 
 void OnKey(unsigned char key, int xmouse, int ymouse)
 {
-	if (key == '+' || key == '-')
+	map< unsigned char, tuple< int, function<void(void)>, function<void(void)> > > param;
+	param['1'] = make_tuple(1, bind(&Julia3D::incQx, &g_julia3d, g_step), bind(&Julia3D::decQx, &g_julia3d, g_step));
+	param['2'] = make_tuple(2, bind(&Julia3D::incQy, &g_julia3d, g_step), bind(&Julia3D::decQy, &g_julia3d, g_step));
+	param['3'] = make_tuple(3, bind(&Julia3D::incQz, &g_julia3d, g_step), bind(&Julia3D::decQz, &g_julia3d, g_step));
+	param['4'] = make_tuple(4, bind(&Julia3D::incQw, &g_julia3d, g_step), bind(&Julia3D::decQw, &g_julia3d, g_step));
+	param['l'] = make_tuple(5, bind(&Julia3D::incSlice, &g_julia3d, g_step), bind(&Julia3D::decSlice, &g_julia3d, g_step));
+	param['i'] = make_tuple(6, bind(&Julia3D::incMaxIterations, &g_julia3d), bind(&Julia3D::decMaxIterations, &g_julia3d));
+	if (key == 'w')
 	{
-		map< unsigned char, pair< function<void(void)>, function<void(void)> > > func;
-		func['x'] = make_pair(bind(&Julia3D::incQx, &g_julia3d, g_step), bind(&Julia3D::decQx, &g_julia3d, g_step));
-		func['y'] = make_pair(bind(&Julia3D::incQy, &g_julia3d, g_step), bind(&Julia3D::decQy, &g_julia3d, g_step));
-		func['z'] = make_pair(bind(&Julia3D::incQz, &g_julia3d, g_step), bind(&Julia3D::decQz, &g_julia3d, g_step));
-		func['w'] = make_pair(bind(&Julia3D::incQw, &g_julia3d, g_step), bind(&Julia3D::decQw, &g_julia3d, g_step));
-		func['d'] = make_pair(bind(&Julia3D::incSlice, &g_julia3d, g_step), bind(&Julia3D::decSlice, &g_julia3d, g_step));
-		func['i'] = make_pair(bind(&Julia3D::incMaxIterations, &g_julia3d), bind(&Julia3D::decMaxIterations, &g_julia3d));
+		g_julia3d.eyeUp();
+	}
+	else if (key == 's')
+	{
+		g_julia3d.eyeDown();
+	}
+	else if (key == 'a')
+	{
+		g_julia3d.eyeLeft();
+	}
+	else if (key == 'd')
+	{
+		g_julia3d.eyeRight();
+	}
+	else if (key == '+' || key == '-')
+	{
 		try
 		{
 
 			if (key == '+') 
 			{
-				func.at(g_activeKey).first();
+				get<1>(param.at(g_activeKey))();
 			} else if (key == '-')
 			{
-				func.at(g_activeKey).second();
+				get<2>(param.at(g_activeKey))();
 			}
 		}
 		catch (out_of_range) { }
 	} 
-	else if ( key == 'x' ||
-			  key == 'y' ||
-			  key == 'z' ||
-			  key == 'w' ||
-			  key == 'i' ||
-			  key == 'd'    )
+	else if ( key == '1' ||
+			  key == '2' ||
+			  key == '3' ||
+			  key == '4' ||
+			  key == 'l' ||
+			  key == 'i'    )
 	{
 		g_activeKey = key;
+		try
+		{
+			g_text2d.setActiveLine(get<0>(param.at(g_activeKey)));
+		}
+		catch (out_of_range) { }
 	}
 }
 

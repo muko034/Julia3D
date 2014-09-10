@@ -35,10 +35,14 @@ void Tokenize(const string& str,
     }
 }
 
+const glm::vec4 Text2D::ACTIVE_FONT_COLOR = glm::vec4(1.0, 0.0, 0.0, 1.0);
+const glm::vec4 Text2D::FONT_COLOR = glm::vec4(1.0, 1.0, 1.0, 1.0);
+
 Text2D::Text2D()
 	: m_size(12),
 	  m_bold(false),
-	  m_color(1.0, 1.0, 1.0, 1.0)
+	  m_color(1.0, 1.0, 1.0, 1.0),
+	  m_lineNr(-1)
 {
 }
 
@@ -78,7 +82,6 @@ void Text2D::render(float x, float y, float sx, float sy)
 
 	/* Set font size to 48 pixels, color to black */
 	FT_Set_Pixel_Sizes(m_face, 0, m_size);
-	m_prog.setUniform("color", m_color);
 
 	//const char *p;
 	FT_GlyphSlot g = m_face->glyph;
@@ -110,6 +113,11 @@ void Text2D::render(float x, float y, float sx, float sy)
 	list<string> lines = splitText();
 	int i = 0; 
 	for (string &line : lines) {
+		if (m_lineNr == i) {
+			m_prog.setUniform("color", ACTIVE_FONT_COLOR);
+		} else {
+			m_prog.setUniform("color", FONT_COLOR);
+		}
 		renderLine(line, x, y-m_size*i*sy, sx, sy);
 		++i;
 	}

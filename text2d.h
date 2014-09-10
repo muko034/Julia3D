@@ -21,6 +21,7 @@ public:
 	bool isBold() const { return m_bold; }
 	void set(const std::string &txt) { m_txt = txt; }
 	std::string get() const { return m_txt; }
+	void setActiveLine(const int &lineNr) { m_lineNr = lineNr; }
 
 	void render(float x, float y, float sx, float sy);
 	void clearText() { m_txt.clear(); }
@@ -38,7 +39,10 @@ private:
 	int m_size;
 	bool m_bold;
 	glm::vec4 m_color;
+	int m_lineNr;
 
+	static const glm::vec4 ACTIVE_FONT_COLOR;
+	static const glm::vec4 FONT_COLOR;
 };
 
 #endif // TEXT2D_H

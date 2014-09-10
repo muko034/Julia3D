@@ -20,8 +20,8 @@ public:
 	void eyeDown() { m_eye.y -= 0.1f; }
 	void eyeLeft() { m_eye.x -= 0.1f; }
 	void eyeRight() { m_eye.x += 0.1f; }
-	void zoomIn() { m_eye.z += 0.1f; }
-	void zoomOut() { m_eye.z -= 0.1f; }
+	void zoomIn() { m_eye.z -= 0.1f; }
+	void zoomOut() { m_eye.z += 0.1f; }
 	void incQx(float step) { m_q.x += step; }
 	void decQx(float step) { m_q.x -= step; }
 	void incQy(float step) { m_q.y += step; }
