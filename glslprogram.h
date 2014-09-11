@@ -8,6 +8,7 @@
 using std::string;
 
 #include <glm/glm.hpp>
+using glm::vec2;
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
@@ -49,6 +50,7 @@ public:
     void   bindFragDataLocation( GLuint location, const char * name );
 
     void   setUniform( const char *name, float x, float y, float z);
+	void   setUniform( const char *name, const vec2 & v);
     void   setUniform( const char *name, const vec3 & v);
     void   setUniform( const char *name, const vec4 & v);
     void   setUniform( const char *name, const mat4 & m);

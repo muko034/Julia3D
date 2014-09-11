@@ -190,6 +190,15 @@ void GLSLProgram::setUniform( const char *name, float x, float y, float z)
     }
 }
 
+void GLSLProgram::setUniform( const char *name, const vec2 & v)
+{
+    int loc = getUniformLocation(name);
+    if( loc >= 0 ) {
+        glUniform2f(loc,v.x,v.y);
+    }
+}
+
+
 void GLSLProgram::setUniform( const char *name, const vec3 & v)
 {
     this->setUniform(name,v.x,v.y,v.z);

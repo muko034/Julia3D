@@ -11,6 +11,7 @@ uniform vec3 u_rO;
 uniform vec4 u_q;
 uniform float u_slice;			
 uniform int u_maxIterations;
+uniform mat4 u_cameraToWorld;
 
 in vec2 fragCoord;
 out vec4 vFragColor;
@@ -147,10 +148,10 @@ int boundingSphere(inout vec3 p, vec3 rD)
 
 void main()
 {
-	vec3 rO						= u_rO;			
-	const vec3 rD				= normalize(vec3(fragCoord, -1));
-					
-	const vec3 light			= vec3(-0.3, 0.0, 1.0);
+	vec3 rO = (u_cameraToWorld * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+	vec3 rD = normalize((u_cameraToWorld * vec4(fragCoord, 1.0, 0.0)).xyz);
+ 				
+	const vec3 light			= vec3(-0.3, 0.0, -1.0);
 	const bool renderShadows	= true;
 
 	vec4 color;

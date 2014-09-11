@@ -37,6 +37,10 @@ public:
 	void decMaxIterations() { --m_maxIterations; }
 	void incStep() { m_step *= 10; }
 	void decStep() { m_step /= 10; }
+	void incAlpha(float f) { m_alpha += f; }
+	void decAlpha(float f) { m_alpha -= f; }
+	void incBeta(float f) { m_beta += f; }
+	void decbeta(float f) { m_beta -= f; }
 private:
 	unsigned m_vbo;
 	GLSLProgram m_prog;
@@ -45,6 +49,13 @@ private:
 	float m_slice;
 	float m_step;
 	int m_maxIterations;
+	float m_alpha;
+	float m_beta;
+
+	glm::vec4 rot0;
+	glm::vec4 rot1;
+	glm::vec4 rot2;
+	glm::vec4 rot3;
 };
 
 #endif // JULIA3D_H

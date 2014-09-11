@@ -19,13 +19,28 @@
 using namespace std;
 using namespace std::placeholders;
 
+struct Pos2D {
+	int x;
+	int y;
+	Pos2D() : x(0), y(0) {}
+	Pos2D(int _x, int _y) : x(_x), y(_y) {}
+};
+
 float gFps = 0;
 Julia3D g_julia3d;
 Text2D g_text2d;
 int g_width;
 int g_height;
+int g_screenWidth;
+int g_screenHeight;
 unsigned char g_activeKey = 0;
 float g_step = 0.01f;
+Pos2D g_lastMousePos;
+bool g_PPM = false;
+map< unsigned char, 
+	 tuple< int, 
+			function<void(void)>, 
+			function<void(void)> > > g_param;
  
 void ChangeSize(int w, int h)
 {
@@ -47,7 +62,17 @@ void SetupRC()
 
 	g_julia3d.init();
 	g_text2d.init();
-	
+
+	g_screenWidth = glutGet(GLUT_SCREEN_WIDTH);
+	g_screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
+
+	g_param['1'] = make_tuple(1, bind(&Julia3D::incQx, &g_julia3d), bind(&Julia3D::decQx, &g_julia3d));
+	g_param['2'] = make_tuple(2, bind(&Julia3D::incQy, &g_julia3d), bind(&Julia3D::decQy, &g_julia3d));
+	g_param['3'] = make_tuple(3, bind(&Julia3D::incQz, &g_julia3d), bind(&Julia3D::decQz, &g_julia3d));
+	g_param['4'] = make_tuple(4, bind(&Julia3D::incQw, &g_julia3d), bind(&Julia3D::decQw, &g_julia3d));
+	g_param['z'] = make_tuple(5, bind(&Julia3D::incSlice, &g_julia3d), bind(&Julia3D::decSlice, &g_julia3d));
+	g_param['x'] = make_tuple(6, bind(&Julia3D::incMaxIterations, &g_julia3d), bind(&Julia3D::decMaxIterations, &g_julia3d));
+	g_param['c'] = make_tuple(7, bind(&Julia3D::incStep, &g_julia3d), bind(&Julia3D::decStep, &g_julia3d));
 }
 
 void RenderScene()
@@ -121,21 +146,13 @@ void Idle (void)
 
 void OnKey(unsigned char key, int xmouse, int ymouse)
 {
-	map< unsigned char, tuple< int, function<void(void)>, function<void(void)> > > param;
-	param['1'] = make_tuple(1, bind(&Julia3D::incQx, &g_julia3d), bind(&Julia3D::decQx, &g_julia3d));
-	param['2'] = make_tuple(2, bind(&Julia3D::incQy, &g_julia3d), bind(&Julia3D::decQy, &g_julia3d));
-	param['3'] = make_tuple(3, bind(&Julia3D::incQz, &g_julia3d), bind(&Julia3D::decQz, &g_julia3d));
-	param['4'] = make_tuple(4, bind(&Julia3D::incQw, &g_julia3d), bind(&Julia3D::decQw, &g_julia3d));
-	param['z'] = make_tuple(5, bind(&Julia3D::incSlice, &g_julia3d), bind(&Julia3D::decSlice, &g_julia3d));
-	param['x'] = make_tuple(6, bind(&Julia3D::incMaxIterations, &g_julia3d), bind(&Julia3D::decMaxIterations, &g_julia3d));
-	param['c'] = make_tuple(7, bind(&Julia3D::incStep, &g_julia3d), bind(&Julia3D::decStep, &g_julia3d));
 	if (key == 'w')
 	{
-		g_julia3d.eyeUp();
+		g_julia3d.zoomIn();
 	}
 	else if (key == 's')
 	{
-		g_julia3d.eyeDown();
+		g_julia3d.zoomOut();
 	}
 	else if (key == 'a')
 	{
@@ -145,21 +162,14 @@ void OnKey(unsigned char key, int xmouse, int ymouse)
 	{
 		g_julia3d.eyeRight();
 	}
-	else if (key == '+' || key == '-')
+	else if (key == 'q')
 	{
-		try
-		{
-
-			if (key == '+') 
-			{
-				get<1>(param.at(g_activeKey))();
-			} else if (key == '-')
-			{
-				get<2>(param.at(g_activeKey))();
-			}
-		}
-		catch (out_of_range) { }
-	} 
+		g_julia3d.eyeUp();
+	}
+	else if (key == 'e')
+	{
+		g_julia3d.eyeDown();
+	}
 	else if ( key == '1' ||
 			  key == '2' ||
 			  key == '3' ||
@@ -171,7 +181,7 @@ void OnKey(unsigned char key, int xmouse, int ymouse)
 		g_activeKey = key;
 		try
 		{
-			g_text2d.setActiveLine(get<0>(param.at(g_activeKey)));
+			g_text2d.setActiveLine(get<0>(g_param.at(g_activeKey)));
 		}
 		catch (out_of_range) { }
 	}
@@ -200,14 +210,51 @@ void OnSpecialKey(int key, int, int)
 
 void OnMouseWheel( int wheel, int direction, int x, int y )
 {
-	if (direction > 0)
+	try
 	{
-		g_julia3d.zoomIn();
+		if (direction > 0)
+		{
+			get<1>(g_param.at(g_activeKey))();
+		}
+		else
+		{
+			get<2>(g_param.at(g_activeKey))();
+		}
 	}
-	else
+	catch (out_of_range) { }
+}
+
+void OnMouseMotion(int x, int y)
+{
+	if (g_PPM)
 	{
-		g_julia3d.zoomOut();
+		float diffX = x-g_lastMousePos.x;
+		g_julia3d.incBeta(diffX/(float)g_screenWidth * 360);
+		float diffY = y-g_lastMousePos.y;
+		g_julia3d.incAlpha(diffY/(float)g_screenHeight * 360);
+
+		g_lastMousePos.x = x;
+		g_lastMousePos.y = y;
 	}
+}
+
+void OnMouse(int button, int state, int x, int y)
+{
+	if (button == GLUT_RIGHT_BUTTON)
+	{
+		if (state == GLUT_DOWN)
+		{
+			g_lastMousePos.x = x;
+			g_lastMousePos.y = y;
+			g_PPM = true;
+		}
+		else
+		{
+			g_PPM = false;
+		}
+	}
+		
+
 }
  
 // Entry point - GLUT setup and initialization
@@ -225,6 +272,8 @@ int main( int argc, char** argv )
 	glutKeyboardFunc(OnKey);
 	glutSpecialFunc(OnSpecialKey);
 	glutMouseWheelFunc(OnMouseWheel);
+	glutMotionFunc(OnMouseMotion);
+	glutMouseFunc(OnMouse);
 
 	SetupRC();
 
