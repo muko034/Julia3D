@@ -148,7 +148,7 @@ int boundingSphere(inout vec3 p, vec3 rD)
 void main()
 {
 	vec3 rO						= u_rO;			
-	const vec3 rD				= normalize(vec3(fragCoord, -1.0));
+	const vec3 rD				= normalize(vec3(fragCoord, -1));
 					
 	const vec3 light			= vec3(-0.3, 0.0, 1.0);
 	const bool renderShadows	= true;

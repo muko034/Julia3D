@@ -111,8 +111,9 @@ void Idle (void)
 	g_text2d.addLineText(string("[2] q_y: ") + to_string(g_julia3d.getQ().y));
 	g_text2d.addLineText(string("[3] q_z: ") + to_string(g_julia3d.getQ().z));
 	g_text2d.addLineText(string("[4] q_w: ") + to_string(g_julia3d.getQ().w));
-	g_text2d.addLineText(string("[l] slice: ") + to_string(g_julia3d.getSlice()));
-	g_text2d.addLineText(string("[i] max iterations: ") + to_string(g_julia3d.getMaxIterations()));
+	g_text2d.addLineText(string("[z] slice: ") + to_string(g_julia3d.getSlice()));
+	g_text2d.addLineText(string("[x] max iterations: ") + to_string(g_julia3d.getMaxIterations()));
+	g_text2d.addLineText(string("[c] step: ") + to_string(g_julia3d.getStep()));
 
     //  Call display function (draw the current frame)
     glutPostRedisplay ();
@@ -121,12 +122,13 @@ void Idle (void)
 void OnKey(unsigned char key, int xmouse, int ymouse)
 {
 	map< unsigned char, tuple< int, function<void(void)>, function<void(void)> > > param;
-	param['1'] = make_tuple(1, bind(&Julia3D::incQx, &g_julia3d, g_step), bind(&Julia3D::decQx, &g_julia3d, g_step));
-	param['2'] = make_tuple(2, bind(&Julia3D::incQy, &g_julia3d, g_step), bind(&Julia3D::decQy, &g_julia3d, g_step));
-	param['3'] = make_tuple(3, bind(&Julia3D::incQz, &g_julia3d, g_step), bind(&Julia3D::decQz, &g_julia3d, g_step));
-	param['4'] = make_tuple(4, bind(&Julia3D::incQw, &g_julia3d, g_step), bind(&Julia3D::decQw, &g_julia3d, g_step));
-	param['l'] = make_tuple(5, bind(&Julia3D::incSlice, &g_julia3d, g_step), bind(&Julia3D::decSlice, &g_julia3d, g_step));
-	param['i'] = make_tuple(6, bind(&Julia3D::incMaxIterations, &g_julia3d), bind(&Julia3D::decMaxIterations, &g_julia3d));
+	param['1'] = make_tuple(1, bind(&Julia3D::incQx, &g_julia3d), bind(&Julia3D::decQx, &g_julia3d));
+	param['2'] = make_tuple(2, bind(&Julia3D::incQy, &g_julia3d), bind(&Julia3D::decQy, &g_julia3d));
+	param['3'] = make_tuple(3, bind(&Julia3D::incQz, &g_julia3d), bind(&Julia3D::decQz, &g_julia3d));
+	param['4'] = make_tuple(4, bind(&Julia3D::incQw, &g_julia3d), bind(&Julia3D::decQw, &g_julia3d));
+	param['z'] = make_tuple(5, bind(&Julia3D::incSlice, &g_julia3d), bind(&Julia3D::decSlice, &g_julia3d));
+	param['x'] = make_tuple(6, bind(&Julia3D::incMaxIterations, &g_julia3d), bind(&Julia3D::decMaxIterations, &g_julia3d));
+	param['c'] = make_tuple(7, bind(&Julia3D::incStep, &g_julia3d), bind(&Julia3D::decStep, &g_julia3d));
 	if (key == 'w')
 	{
 		g_julia3d.eyeUp();
@@ -162,8 +164,9 @@ void OnKey(unsigned char key, int xmouse, int ymouse)
 			  key == '2' ||
 			  key == '3' ||
 			  key == '4' ||
-			  key == 'l' ||
-			  key == 'i'    )
+			  key == 'z' ||
+			  key == 'x' ||
+			  key == 'c'   )
 	{
 		g_activeKey = key;
 		try
