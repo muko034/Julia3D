@@ -17,12 +17,14 @@ public:
 	float getSlice() const { return m_slice; }
 	int getMaxIterations() const { return m_maxIterations; }
 	float getStep() const { return m_step; }
+	void setShadows(const bool &shadows) { m_shadows = shadows; }
+	bool getShadows() const { return m_shadows; }
 	void eyeUp() { m_eye.y += 0.1f; }
 	void eyeDown() { m_eye.y -= 0.1f; }
 	void eyeLeft() { m_eye.x -= 0.1f; }
 	void eyeRight() { m_eye.x += 0.1f; }
-	void zoomIn() { m_eye.z -= 0.1f; }
-	void zoomOut() { m_eye.z += 0.1f; }
+	void zoomIn() { m_eye.z += 0.1f; }
+	void zoomOut() { m_eye.z -= 0.1f; }
 	void incQx() { m_q.x += m_step; }
 	void decQx() { m_q.x -= m_step; }
 	void incQy() { m_q.y += m_step; }
@@ -49,13 +51,9 @@ private:
 	float m_slice;
 	float m_step;
 	int m_maxIterations;
-	float m_alpha;
-	float m_beta;
-
-	glm::vec4 rot0;
-	glm::vec4 rot1;
-	glm::vec4 rot2;
-	glm::vec4 rot3;
+	float m_alpha;	// kat obrotu wokol osi OX
+	float m_beta;	// kat obrotu wokol osi OY
+	bool m_shadows;
 };
 
 #endif // JULIA3D_H

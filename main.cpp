@@ -126,8 +126,6 @@ void calculateFPS()
 
 void Idle (void)
 {
-    //  Animate the object
-
     //  Calculate FPS
     calculateFPS();
 	g_text2d.clearText();
@@ -136,9 +134,10 @@ void Idle (void)
 	g_text2d.addLineText(string("[2] q_y: ") + to_string(g_julia3d.getQ().y));
 	g_text2d.addLineText(string("[3] q_z: ") + to_string(g_julia3d.getQ().z));
 	g_text2d.addLineText(string("[4] q_w: ") + to_string(g_julia3d.getQ().w));
-	g_text2d.addLineText(string("[z] slice: ") + to_string(g_julia3d.getSlice()));
-	g_text2d.addLineText(string("[x] max iterations: ") + to_string(g_julia3d.getMaxIterations()));
-	g_text2d.addLineText(string("[c] step: ") + to_string(g_julia3d.getStep()));
+	g_text2d.addLineText(string("[z] przekoj: ") + to_string(g_julia3d.getSlice()));
+	g_text2d.addLineText(string("[x] l. iteracji: ") + to_string(g_julia3d.getMaxIterations()));
+	g_text2d.addLineText(string("[c] krok: ") + to_string(g_julia3d.getStep()));
+	g_text2d.addLineText(string("[v] cienie: ") + (g_julia3d.getShadows() ? "tak" : "nie"));
 
     //  Call display function (draw the current frame)
     glutPostRedisplay ();
@@ -170,6 +169,26 @@ void OnKey(unsigned char key, int xmouse, int ymouse)
 	{
 		g_julia3d.eyeDown();
 	}
+	else if (key == 'v')
+	{
+		if (g_julia3d.getShadows()) {
+			g_julia3d.setShadows(false);
+		} else {
+			g_julia3d.setShadows(true);
+		}		
+	}
+	else if (key == '+')
+	{
+		try {
+			get<1>(g_param.at(g_activeKey))();
+		} catch (out_of_range) { }
+	}
+	else if (key == '-')
+	{
+		try {
+			get<2>(g_param.at(g_activeKey))();
+		} catch (out_of_range) { }
+	}
 	else if ( key == '1' ||
 			  key == '2' ||
 			  key == '3' ||
@@ -191,16 +210,22 @@ void OnSpecialKey(int key, int, int)
 {
 	switch (key)
 	{
+		case GLUT_KEY_UP:
+			g_julia3d.zoomIn();
+			break;
+		case GLUT_KEY_DOWN:
+			g_julia3d.zoomOut();
+			break;
 		case GLUT_KEY_LEFT:
 			g_julia3d.eyeLeft();
 			break;
 		case GLUT_KEY_RIGHT:
 			g_julia3d.eyeRight();
 			break;
-		case GLUT_KEY_UP:
+		case GLUT_KEY_PAGE_UP:
 			g_julia3d.eyeUp();
 			break;
-		case GLUT_KEY_DOWN:
+		case GLUT_KEY_PAGE_DOWN:
 			g_julia3d.eyeDown();
 			break;
 		default:
@@ -229,9 +254,9 @@ void OnMouseMotion(int x, int y)
 	if (g_PPM)
 	{
 		float diffX = x-g_lastMousePos.x;
-		g_julia3d.incBeta(diffX/(float)g_screenWidth * 360);
+		g_julia3d.incBeta(diffX/(float)g_screenWidth * 180);
 		float diffY = y-g_lastMousePos.y;
-		g_julia3d.incAlpha(diffY/(float)g_screenHeight * 360);
+		g_julia3d.incAlpha(diffY/(float)g_screenWidth * 180);
 
 		g_lastMousePos.x = x;
 		g_lastMousePos.y = y;
@@ -265,7 +290,7 @@ int main( int argc, char** argv )
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA );
 	glutInitWindowSize(800, 600);
-	glutCreateWindow("Julia3D");
+	glutCreateWindow("Zbiory Julii 3D");
 	glutReshapeFunc(ChangeSize);
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);

@@ -16,7 +16,8 @@ Julia3D::Julia3D()
 	  m_step(0.01f),
 	  m_maxIterations(8),
 	  m_alpha(0.0f),
-	  m_beta(0.0f)
+	  m_beta(0.0f),
+	  m_shadows(false)
 {
 }
 
@@ -37,8 +38,9 @@ void Julia3D::render()
 {
 	mat4 rotX = glm::rotate(glm::mat4(1.0f), m_alpha, vec3(1.0f, 0.0f, 0.0f));
 	mat4 rotY = glm::rotate(glm::mat4(1.0f), m_beta, vec3(0.0f, 1.0f, 0.0f));
+	mat4 rot = rotX*rotY;
 	mat4 trans = glm::translate(glm::mat4(1.0f), m_eye);
-	mat4 cameraToWorld = rotX*rotY*trans;
+	mat4 cameraToWorld = rot*trans*rot;
 
 
 	/////////////////// Create the VBO ////////////////////
@@ -64,11 +66,11 @@ void Julia3D::render()
 
 	m_prog.use();
 
-	m_prog.setUniform("u_rO", m_eye);
 	m_prog.setUniform("u_q", m_q);
 	m_prog.setUniform("u_slice", m_slice);
 	m_prog.setUniform("u_maxIterations", m_maxIterations);
 	m_prog.setUniform("u_cameraToWorld", cameraToWorld);
+	m_prog.setUniform("u_renderShadows", m_shadows);
 	
 
 	glBindVertexArray(m_vbo);

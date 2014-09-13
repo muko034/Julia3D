@@ -6,12 +6,12 @@ precision highp float;
 #define DEL					1e-4
 #define EPSILON				1e-3
 
-// ZMIENNE TYPU UNIFORM
-uniform vec3 u_rO;				
+// ZMIENNE TYPU UNIFORM			
 uniform vec4 u_q;
 uniform float u_slice;			
 uniform int u_maxIterations;
 uniform mat4 u_cameraToWorld;
+uniform bool u_renderShadows;
 
 in vec2 fragCoord;
 out vec4 vFragColor;
@@ -152,7 +152,6 @@ void main()
 	vec3 rD = normalize((u_cameraToWorld * vec4(fragCoord, 1.0, 0.0)).xyz);
  				
 	const vec3 light			= vec3(-0.3, 0.0, -1.0);
-	const bool renderShadows	= true;
 
 	vec4 color;
 
@@ -170,7 +169,7 @@ void main()
 		color.xyz = Phong(light, rD, rO, N);
 		color.w = 1.0;
 
-		if (false/*renderShadows == true*/) {
+		if (u_renderShadows == true) {
 			vec3 L = normalize(light - rO);
 			rO += N * EPSILON * 2.0;
 			foundIntersection = rayMarching(rO, L);
@@ -178,7 +177,6 @@ void main()
 				color.xyz *= 0.4;
 			}
 		}
-		//color.x *= 1.5;
 	} else {
 		discard;
 	}
