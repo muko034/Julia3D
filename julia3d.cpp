@@ -39,8 +39,9 @@ void Julia3D::render()
 	mat4 rotX = glm::rotate(glm::mat4(1.0f), m_alpha, vec3(1.0f, 0.0f, 0.0f));
 	mat4 rotY = glm::rotate(glm::mat4(1.0f), m_beta, vec3(0.0f, 1.0f, 0.0f));
 	mat4 rot = rotX*rotY;
-	mat4 trans = glm::translate(glm::mat4(1.0f), m_eye);
-	mat4 cameraToWorld = rot*trans*rot;
+	vec4 r = rot * vec4(m_eye.x, m_eye.y, m_eye.z, 1.0f);
+	mat4 trans = glm::translate(glm::mat4(1.0f), vec3(r.x, r.y, r.z));
+	mat4 cameraToWorld = trans*rot;
 
 
 	/////////////////// Create the VBO ////////////////////

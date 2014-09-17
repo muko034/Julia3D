@@ -19,12 +19,12 @@ public:
 	float getStep() const { return m_step; }
 	void setShadows(const bool &shadows) { m_shadows = shadows; }
 	bool getShadows() const { return m_shadows; }
-	void eyeUp() { m_eye.y += 0.1f; }
-	void eyeDown() { m_eye.y -= 0.1f; }
-	void eyeLeft() { m_eye.x -= 0.1f; }
-	void eyeRight() { m_eye.x += 0.1f; }
-	void zoomIn() { m_eye.z += 0.1f; }
-	void zoomOut() { m_eye.z -= 0.1f; }
+	void eyeUp() { m_eye.y += 0.05f; }
+	void eyeDown() { m_eye.y -= 0.05f; }
+	void eyeLeft() { m_eye.x -= 0.05f; }
+	void eyeRight() { m_eye.x += 0.05f; }
+	void zoomIn() { m_eye.z += 0.05f; }
+	void zoomOut() { m_eye.z -= 0.05f; }
 	void incQx() { m_q.x += m_step; }
 	void decQx() { m_q.x -= m_step; }
 	void incQy() { m_q.y += m_step; }

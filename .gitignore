@@ -1,4 +1,8 @@
 Debug/
+Release/
 x64/
 include/
 lib/
+*.dll
+*.exe
+log.txt
